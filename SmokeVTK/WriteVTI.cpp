@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 					//fluid->u[_I(xpos, i + ypos, j + 28)] = -3.0f;
 					pos = fluid->_I(i + xpos, j + ypos, k + zpos);
 					fluid->d[pos] = dd + 1;
-					fluid->w[pos] = 0.5f;
+					fluid->w[pos] = 1.5f;
 					fluid->T[pos] = T+1;
 				}
 			}
