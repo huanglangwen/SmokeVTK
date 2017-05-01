@@ -358,10 +358,15 @@ void Fluid::store(int time)
 	std::string windName = buff;
 	auto densTempData = vtkSmartPointer<vtkImageData>::New();
 	auto windData = vtkSmartPointer<vtkImageData>::New();
+
 	densTempData->SetDimensions(Nx + 2, Ny + 2, Nz + 2);
+	densTempData->SetSpacing(delta, delta, delta);
 	densTempData->AllocateScalars(VTK_DOUBLE, 2);
+	
 	windData->SetDimensions(Nx + 2, Ny + 2, Nz + 2);
+	windData->SetSpacing(delta, delta, delta);
 	windData->AllocateScalars(VTK_DOUBLE, 3);
+	
 	int* dims = densTempData->GetDimensions();
 	// Fill every entry of the image data with d
 	for (int z = 0; z < dims[2]; z++)
