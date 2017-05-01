@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	fluid->buoyancy = 1.0f;
 	fluid->vc_eps = 300.0f;
 	fluid->conduction = 0.000024f;//0.000024f;//¿ÕÆøÈÈÀ©É¢ÂÊ
+	fluid->terminalW = 0.08;//m/s for 0.05mm particles
 	
 
 	

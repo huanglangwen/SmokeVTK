@@ -315,8 +315,8 @@ void Fluid::dens_temp_step(double dt)
 #endif
 #ifdef ADVECT
 	SWAPFPTR(d0, d);
-	//dry falling w-=0.314
-	for (int i = 0;i < SIZE;i++)dryfallingW[i] = w[i] - 0.314;
+	//dry falling d=0.02mm w-=0.0314
+	for (int i = 0;i < SIZE;i++)dryfallingW[i] = w[i] - terminalW;
 	advect(0, d0, d, u, v, dryfallingW, dt);
 	SWAPFPTR(T0, T);
 	advect(0, T0, T, u, v, w, dt);

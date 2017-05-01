@@ -64,7 +64,7 @@ protected:
 
 public:
 	Field sd, su, sv, sw, sT;	// sources for density and velocities
-	double diffusion, conduction, viscosity, buoyancy, vc_eps;
+	double diffusion, conduction, viscosity, buoyancy, vc_eps, terminalW;
 
 	int _I(int x, int y, int z);
 
