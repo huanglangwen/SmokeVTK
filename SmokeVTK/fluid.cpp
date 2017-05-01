@@ -380,11 +380,15 @@ void Fluid::store(int time)
 		}
 	}
 	auto writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+#define OUTPUT_DENSTEMP
+#ifdef OUTPUT_DENSTEMP
 	writer->SetFileName(densTempName.c_str());
 	writer->SetInputData(densTempData);
 	writer->Write();
+#endif
+#ifdef OUTPUT_WIND
 	writer->SetFileName(windName.c_str());
 	writer->SetInputData(windData);
 	writer->Write();
-
+#endif
 }
