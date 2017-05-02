@@ -4,6 +4,18 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 
 #include <vtkVersion.h>
 
+#define RENDER_ON
+//#define STORE_ON
+#ifdef RENDER_ON
+#include <vtkSmartVolumeMapper.h>
+#include <vtkColorTransferFunction.h>
+#include <vtkPiecewiseFunction.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkVolumeProperty.h>
+#include <vtkCamera.h>
+#endif
 
 #include <cstdio>
 //#include <Windows.h>
@@ -94,7 +106,7 @@ int main(int argc, char *argv[])
 		fluid->step(dt);
 		printf("Time: %f\n",t);
 		count++;
-#ifndef NO_STORE
+#ifdef STORE_ON
 		if (count % 10 == 0) {
 			fluid->store(count/10);
 		}

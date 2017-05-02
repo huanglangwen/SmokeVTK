@@ -349,25 +349,62 @@ void Fluid::clear_sources(void)
 	}
 }
 
-void Fluid::store(int time)
+vtkSmartPointer<vtkImageData> Fluid::getDensTempData(int sign)
 {
-	char buff[100];
-	snprintf(buff, sizeof(buff), "densityTemperature%d.vti", time);
-	std::string densTempName = buff;
-	snprintf(buff, sizeof(buff), "Wind%d.vti", time);
-	std::string windName = buff;
 	auto densTempData = vtkSmartPointer<vtkImageData>::New();
-	auto windData = vtkSmartPointer<vtkImageData>::New();
-
 	densTempData->SetDimensions(Nx + 2, Ny + 2, Nz + 2);
 	densTempData->SetSpacing(delta, delta, delta);
-	densTempData->AllocateScalars(VTK_DOUBLE, 2);
 	
+	if (sign == 1 || sign == 2) densTempData->AllocateScalars(VTK_DOUBLE, 1);
+	else  densTempData->AllocateScalars(VTK_DOUBLE, 2);
+
+	int* dims = densTempData->GetDimensions();
+
+	double* t;
+	if (sign == 1)t = d;
+	else t = T;
+
+	if (sign == 1 || sign == 2) 
+	{
+		for (int z = 0; z < dims[2]; z++)
+		{
+			for (int y = 0; y < dims[1]; y++)
+			{
+				for (int x = 0; x < dims[0]; x++)
+				{
+					double* pixel = static_cast<double*>(densTempData->GetScalarPointer(x, y, z));
+					pixel[0] = (double)t[_I(x, y, z)];//1 for density, 2 for temperature
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int z = 0; z < dims[2]; z++)
+		{
+			for (int y = 0; y < dims[1]; y++)
+			{
+				for (int x = 0; x < dims[0]; x++)
+				{
+					double* pixel = static_cast<double*>(densTempData->GetScalarPointer(x, y, z));
+					pixel[0] = d[_I(x, y, z)];//3 for density and temperature
+					pixel[1] = T[_I(x, y, z)];
+				}
+			}
+		}
+	}
+	return densTempData;
+}
+
+vtkSmartPointer<vtkImageData> Fluid::getWindData(void)
+{
+	auto windData = vtkSmartPointer<vtkImageData>::New();
+
 	windData->SetDimensions(Nx + 2, Ny + 2, Nz + 2);
 	windData->SetSpacing(delta, delta, delta);
 	windData->AllocateScalars(VTK_DOUBLE, 3);
-	
-	int* dims = densTempData->GetDimensions();
+
+	int* dims = windData->GetDimensions();
 	// Fill every entry of the image data with d
 	for (int z = 0; z < dims[2]; z++)
 	{
@@ -375,16 +412,26 @@ void Fluid::store(int time)
 		{
 			for (int x = 0; x < dims[0]; x++)
 			{
-				double* pixel1 = static_cast<double*>(densTempData->GetScalarPointer(x, y, z));
-				double* pixel2 = static_cast<double*>(windData->GetScalarPointer(x, y, z));
-				pixel1[0] = d[_I(x,y,z)];
-				pixel1[1] = T[_I(x, y, z)];
-				pixel2[0] = u[_I(x, y, z)];
-				pixel2[1] = v[_I(x, y, z)];
-				pixel2[2] = w[_I(x, y, z)];
+				double* pixel = static_cast<double*>(windData->GetScalarPointer(x, y, z));
+				pixel[0] = u[_I(x, y, z)];
+				pixel[1] = v[_I(x, y, z)];
+				pixel[2] = w[_I(x, y, z)];
 			}
 		}
 	}
+	return windData;
+}
+
+void Fluid::store(int time)
+{
+	char buff[100];
+	snprintf(buff, sizeof(buff), "densityTemperature%d.vti", time);
+	std::string densTempName = buff;
+	snprintf(buff, sizeof(buff), "Wind%d.vti", time);
+	std::string windName = buff;
+	auto densTempData = getDensTempData(3);
+	auto windData = getWindData();
+
 	auto writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
 #define OUTPUT_DENSTEMP
 #ifdef OUTPUT_DENSTEMP
