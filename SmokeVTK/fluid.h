@@ -61,8 +61,7 @@ protected:
 	// utility methods
 	void clear_buffer(double* x);
 	void clear_sources(void);
-	vtkSmartPointer<vtkImageData> getDensTempData(int sign);//1 for density, 2 for temperature, 3 for both density and temperature
-	vtkSmartPointer<vtkImageData> getWindData(void);
+
 
 public:
 	Field sd, su, sv, sw, sT;	// sources for density and velocities
@@ -74,6 +73,9 @@ public:
 	~Fluid(void);
 
 	void step(double dt);
+
+	vtkSmartPointer<vtkImageData> getDensTempData(int sign);//1 for density, 2 for temperature, 3 for both density and temperature
+	vtkSmartPointer<vtkImageData> getWindData(void);
 
 	//void store(vtkSmartPointer<vtkImageData> fp);
 	void store(int time);

@@ -1,5 +1,6 @@
 #include "vtkAutoInit.h" 
 VTK_MODULE_INIT(vtkRenderingOpenGL2); // VTK was built with vtkRenderingOpenGL2
+//VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 
 #include <vtkVersion.h>
@@ -61,7 +62,45 @@ int main(int argc, char *argv[])
 	fluid->conduction = 0.000024f;//0.000024f;//¿ÕÆøÈÈÀ©É¢ÂÊ
 	fluid->terminalW = 0.08;//m/s for 0.05mm particles
 	
+#ifdef RENDER_ON
+	auto renWin = vtkSmartPointer<vtkRenderWindow>::New();
+	auto ren1 = vtkSmartPointer<vtkRenderer>::New();
+	ren1->SetBackground(0.45,0.45,0.45);
+	renWin->AddRenderer(ren1);
 
+	renWin->SetSize(301, 300); // intentional odd and NPOT  width/height
+
+	auto iren =	vtkSmartPointer<vtkRenderWindowInteractor>::New();
+	iren->SetRenderWindow(renWin);
+
+	renWin->Render(); // make sure we have an OpenGL context.
+
+	auto volumeMapper = vtkSmartPointer<vtkSmartVolumeMapper>::New();
+	volumeMapper->SetBlendModeToComposite(); // composite first
+
+	auto volumeProperty = vtkSmartPointer<vtkVolumeProperty>::New();
+	volumeProperty->ShadeOff();
+	volumeProperty->SetInterpolationType(VTK_LINEAR_INTERPOLATION);
+
+	auto compositeOpacity =	vtkSmartPointer<vtkPiecewiseFunction>::New();
+	compositeOpacity->AddPoint(0.0, 0.0);
+	compositeOpacity->AddPoint(2.0, 1.0);
+	volumeProperty->SetScalarOpacity(compositeOpacity); // composite first.
+
+	auto color = vtkSmartPointer<vtkColorTransferFunction>::New();
+	color->AddRGBPoint(0.0, 0.5, 0.5, 0.5);
+	color->AddRGBPoint(2.0, 1.0, 1.0, 1.0);
+	volumeProperty->SetColor(color);
+
+	auto volume = vtkSmartPointer<vtkVolume>::New();
+	volume->SetMapper(volumeMapper);
+	volume->SetProperty(volumeProperty);
+	ren1->AddViewProp(volume);
+	ren1->ResetCamera();
+
+	//volumeMapper->SetRequestedRenderModeToGPU();
+
+#endif
 	
 
 	int count = 0;
@@ -106,6 +145,11 @@ int main(int argc, char *argv[])
 		fluid->step(dt);
 		printf("Time: %f\n",t);
 		count++;
+
+#ifdef RENDER_ON
+		volumeMapper->SetInputData(fluid->getDensTempData(1));
+		renWin->Render();
+#endif
 #ifdef STORE_ON
 		if (count % 10 == 0) {
 			fluid->store(count/10);

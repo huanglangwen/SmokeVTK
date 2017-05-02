@@ -405,7 +405,7 @@ vtkSmartPointer<vtkImageData> Fluid::getWindData(void)
 	windData->AllocateScalars(VTK_DOUBLE, 3);
 
 	int* dims = windData->GetDimensions();
-	// Fill every entry of the image data with d
+	// Fill every entry of the image data with u v w
 	for (int z = 0; z < dims[2]; z++)
 	{
 		for (int y = 0; y < dims[1]; y++)
