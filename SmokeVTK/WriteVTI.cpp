@@ -94,9 +94,11 @@ int main(int argc, char *argv[])
 		fluid->step(dt);
 		printf("Time: %f\n",t);
 		count++;
+#ifndef NO_STORE
 		if (count % 10 == 0) {
 			fluid->store(count/10);
 		}
+#endif
 	}
 
 	
