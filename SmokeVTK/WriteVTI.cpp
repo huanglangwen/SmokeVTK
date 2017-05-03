@@ -1,6 +1,6 @@
 #include "vtkAutoInit.h" 
 VTK_MODULE_INIT(vtkRenderingOpenGL2); // VTK was built with vtkRenderingOpenGL2
-//VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 
 #include <vtkVersion.h>
@@ -8,6 +8,8 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 #define RENDER_ON
 //#define STORE_ON
 #ifdef RENDER_ON
+//#include <vtkRenderingVolumeOpenGL2Module.h>
+//#include <vtkRenderingVolumeOpenGL2ObjectFactory.h>
 #include <vtkSmartVolumeMapper.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkPiecewiseFunction.h>
@@ -22,7 +24,7 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 //#include <Windows.h>
 #include "fluid.h"
 
-constexpr int totaltime = 25;
+constexpr int totaltime = 1;
 constexpr double dt = 0.1;
 constexpr int xpos = 10;
 constexpr int ypos = 28;
@@ -65,10 +67,10 @@ int main(int argc, char *argv[])
 #ifdef RENDER_ON
 	auto renWin = vtkSmartPointer<vtkRenderWindow>::New();
 	auto ren1 = vtkSmartPointer<vtkRenderer>::New();
-	ren1->SetBackground(0.45,0.45,0.45);
+	ren1->SetBackground(1.0,1.0,1.0);
 	renWin->AddRenderer(ren1);
 
-	renWin->SetSize(301, 300); // intentional odd and NPOT  width/height
+	renWin->SetSize(1000, 600); // intentional odd and NPOT  width/height
 
 	auto iren =	vtkSmartPointer<vtkRenderWindowInteractor>::New();
 	iren->SetRenderWindow(renWin);
@@ -84,20 +86,30 @@ int main(int argc, char *argv[])
 
 	auto compositeOpacity =	vtkSmartPointer<vtkPiecewiseFunction>::New();
 	compositeOpacity->AddPoint(0.0, 0.0);
+	compositeOpacity->AddPoint(0.1, 0.4);
+	compositeOpacity->AddPoint(0.5, 0.8);
 	compositeOpacity->AddPoint(2.0, 1.0);
 	volumeProperty->SetScalarOpacity(compositeOpacity); // composite first.
 
 	auto color = vtkSmartPointer<vtkColorTransferFunction>::New();
-	color->AddRGBPoint(0.0, 0.5, 0.5, 0.5);
-	color->AddRGBPoint(2.0, 1.0, 1.0, 1.0);
+	color->AddRGBPoint(0.0, 0.2, 0.2, 0.2);
+	color->AddRGBPoint(2.0, 1.0, 0, 0);
 	volumeProperty->SetColor(color);
 
 	auto volume = vtkSmartPointer<vtkVolume>::New();
 	volume->SetMapper(volumeMapper);
 	volume->SetProperty(volumeProperty);
 	ren1->AddViewProp(volume);
-	ren1->ResetCamera();
 
+	auto camera = vtkSmartPointer<vtkCamera>::New();
+	camera->SetPosition(1.5, 1.5, 7);
+	camera->SetFocalPoint(1.5, 1.5, 0.2);
+	camera->OrthogonalizeViewUp();
+	camera->Elevation(-70);
+
+	ren1->SetActiveCamera(camera);
+	//ren1->ResetCamera();
+	
 	//volumeMapper->SetRequestedRenderModeToGPU();
 
 #endif
@@ -155,11 +167,18 @@ int main(int argc, char *argv[])
 			fluid->store(count/10);
 		}
 #endif
+		
 	}
 
-	
+	camera->Render(ren1);
+	//camera = ren1->GetActiveCamera();
+	double pos[3], focpoint[3];
+	camera->GetPosition(pos);
+	camera->GetFocalPoint(focpoint);
+	printf("Position: %f %f %f\n", pos[0],pos[1],pos[2]);
+	printf("FocalPoint: %f %f %f\n", focpoint[0], focpoint[1], focpoint[2]);
 
-
+	iren->Start();
 
 	//system("Pause");
 	return EXIT_SUCCESS;
